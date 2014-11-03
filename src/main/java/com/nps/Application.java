@@ -25,9 +25,9 @@ public class Application extends Neo4jConfiguration {
     GraphDatabaseService graphDatabaseService() {
 
         //return new EmbeddedGraphDatabase("target/graph.db");
-//        return new SpringRestGraphDatabase("http://collatz.sb02.stations.graphenedb.com:24789/db/data/",
-//                "collatz", "xz5nMZiICRjIm6DYPjMo");
-        return new SpringRestGraphDatabase("http://localhost:7474/db/data/");
+        return new SpringRestGraphDatabase("http://collatz.sb02.stations.graphenedb.com:24789/db/data/",
+                "collatz", "xz5nMZiICRjIm6DYPjMo");
+        //return new SpringRestGraphDatabase("http://localhost:7474/db/data/");
     }
 
     public static void main(String[] args) throws Exception {
