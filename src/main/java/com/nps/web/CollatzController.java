@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -23,22 +22,28 @@ public class CollatzController {
         return collatzNumberRepository.getByValue(value);
     }
 
-    @RequestMapping("/multipleIncoming")
+    @RequestMapping("/multiple-incoming")
     Set<CollatzNumber> multipleIncoming(){
         return collatzNumberRepository.findMoreThanOneIncomingRelationship();
     }
 
-    @RequestMapping("/longestPath")
+    @RequestMapping("/longest-path")
     List<CollatzNumber> longestPath(){
         CollatzNumberRepository.CollatzPathData path = collatzNumberRepository.longestPath();
-        return path.getNumbers();
+        return path.getPath();
     }
 
 
-    @RequestMapping("/longestResolvedPath")
+    @RequestMapping("/longest-resolved-path")
     List<CollatzNumber> longestResolvedPath(){
         CollatzNumberRepository.CollatzPathData path = collatzNumberRepository.longestResolvedPath();
-        return path.getNumbers();
+        return path.getPath();
+    }
+
+    @RequestMapping("/circular-paths")
+    List<CollatzNumberRepository.CollatzPathData> circularPaths(){
+        List<CollatzNumberRepository.CollatzPathData> path = collatzNumberRepository.circularPaths();
+        return path;
     }
 
     @RequestMapping("/populate-nodes")

@@ -23,7 +23,7 @@ public interface CollatzNumberRepository extends GraphRepository<CollatzNumber> 
     Set<CollatzNumber> findMoreThanOneIncomingRelationship();
 
     @Query("MATCH p = (n)-[r:NEXT*]->(m) " +
-            "RETURN nodes(p) " +
+            "RETURN nodes(p) as path " +
             "ORDER BY length(p) desc " +
             "LIMIT 1;")
     CollatzPathData longestPath();
@@ -31,7 +31,7 @@ public interface CollatzNumberRepository extends GraphRepository<CollatzNumber> 
 
     @Query("MATCH p = (n)-[r:NEXT*]->(m) " +
             "WHERE m.value = 1 " +
-            "RETURN nodes(p) " +
+            "RETURN nodes(p) as path " +
             "ORDER BY length(p) desc " +
             "LIMIT 1;")
     CollatzPathData longestResolvedPath();
@@ -39,14 +39,16 @@ public interface CollatzNumberRepository extends GraphRepository<CollatzNumber> 
 
     @Query("MATCH p = (n)-[r:NEXT*]->(m) " +
             "WHERE n = m " +
-            "RETURN nodes(p);")
-    CollatzPathData circularPaths();
+            "RETURN nodes(p) as path;")
+//            "RETURN collect(distinct m) as path;")
+//            "RETURN collect(distinct nodes(p)) as path;")
+    List<CollatzPathData> circularPaths();
 
 
     @QueryResult
     public interface CollatzPathData {
 
-        @ResultColumn("nodes(p)")
-        List<CollatzNumber> getNumbers();
+        @ResultColumn("path")
+        List<CollatzNumber> getPath();
     }
 }
