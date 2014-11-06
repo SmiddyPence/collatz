@@ -1,6 +1,8 @@
 package com.nps;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -24,10 +26,17 @@ public class Application extends Neo4jConfiguration {
     @Bean
     GraphDatabaseService graphDatabaseService() {
 
-        //return new EmbeddedGraphDatabase("target/graph.db");
-//        return new SpringRestGraphDatabase("http://collatz.sb02.stations.graphenedb.com:24789/db/data/",
-//                "collatz", "xz5nMZiICRjIm6DYPjMo");
-        return new SpringRestGraphDatabase("http://localhost:7474/db/data/");
+        String dbUrl = System.getenv("DB_URL");
+        String userName = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASSWORD");
+
+        if(dbUrl == null || userName == null || password == null ) {
+            dbUrl = "http://localhost:7474/db/data";
+            System.out.println("Database not configured defaulting to localhost");
+        }
+        return new SpringRestGraphDatabase(dbUrl, userName, password);
+
+        //return new GraphDatabaseFactory().newEmbeddedDatabase("target/graph.db");
     }
 
     public static void main(String[] args) throws Exception {

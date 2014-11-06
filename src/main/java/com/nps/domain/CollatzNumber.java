@@ -1,26 +1,22 @@
 package com.nps.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @NodeEntity
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 public class CollatzNumber {
 
     @GraphId
-    @JsonIgnore
     Long id;
 
     int value;
 
     @RelatedTo(type="NEXT", direction = Direction.OUTGOING)
-    @JsonIgnore
     CollatzNumber nextNumber;
 
     public Long getId() {
