@@ -1,0 +1,249 @@
+<section id="main_content" class="inner">
+
+<h2 id="introduction">Introduction</h2>
+
+<p>The starting point for this guide can be found on the home page for <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>. It is just a simple service that returns Hello World! as JSON. </p>
+
+<p>At this point I must be said that the Spring folks have really hit a sweet spot with this product offering. It is now trivial to run a JEE container with a few lines of code (or even a <a href="https://twitter.com/rob_winch/status/364871658483351552">Tweet</a>). I can honestly just see this being the core product in the future, particularly with the rise of the micro-service. </p>
+
+<p>As someone who has used Spring since it was considered death by XML it is great to see how far it has come.</p>
+
+<h2 id="part1bootingup">Part 1: Booting Up</h2>
+
+<h4 id="prerequisites">Prerequisites:</h4>
+
+<p>Java 1.7 <br />
+    Maven 3+ <br />
+    Favorite IDE</p>
+
+<h4 id="instructions">Instructions</h4>
+
+<p>So create a new maven project in your IDE and insert the following to you pom:</p>
+
+<pre><code class="xml">…
+&lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;1.1.8.RELEASE&lt;/version&gt;
+&lt;/parent&gt;
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+…
+</code></pre>
+
+<p>This will pull in all the dependencies we need for a fully working web application that can handle HttpRequests.</p>
+
+<p>Then create a controller class with a desirable name and package.  I’m going to call it WelcomeController, as you will see it just returns the obligatory “Hello World!”</p>
+
+<pre><code class="java">package com.nps;
+
+    import org.springframework.boot.*;
+    import org.springframework.boot.autoconfigure.*;
+    import org.springframework.stereotype.*;
+    import org.springframework.web.bind.annotation.*;
+
+    @Controller
+    @EnableAutoConfiguration
+    public class WelcomeController {
+
+    @RequestMapping("/")
+    @ResponseBody
+    String home() {
+        return "Hello World!";
+    }
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(WelcomeController.class, args);
+    }
+}
+</code></pre>
+
+<p>So there shouldn’t be anything to out of the ordinary here.  Perhaps the most unusual occurrence is that we have a main method in a Controller class.  This is just included here for brevity and can be refactored later.</p>
+
+<p>Otherwise, of note there are several annotations, that depending on your familiarity with Spring may or may not be known to you.  </p>
+
+<p><code>@Controller</code> is a specific stereotype for Spring managed beans that handle HttpResquests. </p>
+
+<p><code>@EnableAutoConfiguration</code> is where the magic of Spring Boot attempts to configure your Spring Application context with minimum fuss. Later we will define beans programmatically for it to use - without so much of a whiff of XML. </p>
+
+<p><code>@RequestMapping("/")</code>, indicates that when accessing the base url of our application i.e. “/” this method will be invoked for a response.  </p>
+
+<p><code>@ResponseBody</code> The final annotation indicates that the return type should be converted to the HttpResponse body; by default this will be JSON using the Jackson processor.</p>
+
+<p>Lastly we have <code>SpringApplication.run</code> which is interesting as it is a significant change to the typical paradigm of deploying a Java web application.  Traditionally you start a server in a different process then deploy your application to it.  In this case however, it sees us "bringing our own" container, sometimes referred to as "Bootstrapping".  By default Spring Boot uses and embedded version of Tomcat although this can be swapped out easily enough for Jetty. </p>
+
+<h4 id="checkpoint">Check Point:</h4>
+
+<p>So providing your code compiles you should be able to run the class with main in, most IDE’s will allow you to simply Right Click > Run Main().  You should see the server starting in the console finishing with something like “Started WelcomeController in X seconds”</p>
+
+<p><img src="http://nicholaspaulsmith.com/content/images/2014/11/bootrunning-1.png" alt="" /></p>
+
+<p>Got to your browser and head to localhost:8080 and you should be greeted by “Hello World!”</p>
+
+<h2 id="part2thefatjar">Part 2: The Fat Jar</h2>
+
+<h4 id="instructions">Instructions</h4>
+
+<p>Ok, we have what resembles a working application, if executed through main; however as we will be putting this application on Heroku.  We would therefore like an executable jar file that can be invoked from a command line.</p>
+
+<p>Head to the command line and build your project; <code>mvn clean install</code> or equivelant. Once built you should see a jar file in the target directory.  If you were to try and run this using the command <code>java –jar myjarname.jar</code> you will get and error.  Also note the size of the file is very small, opening it up will show we actually have little inside other than what we have so far created.</p>
+
+<p>Time to make a “fat jar” of our application; add the following to your pom:</p>
+
+<pre><code class="xml">&lt;build&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/build&gt;
+</code></pre>
+
+<p>If you now rebuild your project the resultant jar file will be a lot bigger, circa 10MB.  The plugin has added all the dependencies into the jar, hence the colloquialism “fat jar”. </p>
+
+<h4 id="checkpoint">Checkpoint:</h4>
+
+<p>So now executing <code>java –jar myjarname.jar</code> from the command line will result in a running application server.  </p>
+
+<p><em>Remember to stop the existing process if you still have it running in the IDE.</em></p>
+
+<p>This is pretty cool in itself we can now easily run an application server anywhere we have Java (7) installed.</p>
+
+<h2 id="part3heroku">Part 3: Heroku</h2>
+
+<p>Heroku is probably one of the best examples of a Platform as a Service (PaaS).  Most importantly for us it offers a free tier that is sufficient for our needs.</p>
+
+<p><em>The free tier will stop all running processes after a period of an hour inactivity.  This means that the first time you return to the application you can experience a significant delay while the server restarts.</em></p>
+
+<h4 id="prerequisites">Prerequisites:</h4>
+
+<p>Git (and on path) <br />
+    Heroku Toolbelt (and on path) <br />
+    SSH Keys</p>
+
+<h4 id="instructions">Instructions:</h4>
+
+<p>If you have not used Heroku before, it is at this stage I will recommend their getting started <a href="https://devcenter.heroku.com/articles/getting-started-with-java#introduction">tutorial</a>; then taking it as far as pushing your first application i.e. “Deploying the app”</p>
+
+<p>With Heroku it is wonderfully easy to deploy applications using Git; however it does require a fair amount of one time setup. Registering an account with them, installing their own Toolbelt software and generating SSH keys.  As the latter two points will differ for Windows/Mac/Linux users I won’t tackle it here.</p>
+
+<p>By this point, you have followed the instructions above and now deployed at least one application on Heroku so we know you have the Toolbelt and your SSH key correctly configured.  </p>
+
+<p>There are two things we need to do to get our Spring Boot application running on Heroku, but first we’re going to do neither of them and see what happens.  When learning I feel it is important to get off the happy path from time to time and see what happened when something is broken.</p>
+
+<p>Before we start on the command line, lets create a .gitignore file in the project root to identify the files we are not interested in putting under version control or pushing to Heroku. <a href="https://github.com/SmiddyPence/collatz/blob/master/.gitignore">Here is an example</a> you can use.</p>
+
+<p>So from the root of your project i.e. where the pom.xml file lives execute the following:</p>
+
+<pre><code class="sh">git init
+</code></pre>
+
+<p>Expect a "Initialized empty Git repository in xyz" message.</p>
+
+<pre><code class="sh">heroku login
+&lt;enter credentials&gt;
+</code></pre>
+
+<p>Expect a "Authentication successful" message.</p>
+
+<pre><code class="sh">heroku create
+</code></pre>
+
+<p>Expect an output similar to the following:</p>
+
+<p><code>Creating warm-sands-3469... done, stack is cedar-14 https://warm-sands-3469.herokuapp.com/ | git@heroku.com:warm-sands-3469.git</code></p>
+
+<p>Heroku creates applications with randomly generated verb-noun-number combinations.  We can change this to our liking later.</p>
+
+<p>Cast your Git spell:  </p>
+
+<pre><code class="sh">git add .
+git commit –am “initial commit”
+git push heroku master
+&lt;enter passphrase&gt;
+</code></pre>
+
+<p>Now hopefully you should see a build success log message in your console.</p>
+
+<p><img src="http://nicholaspaulsmith.com/content/images/2014/11/herokuconsole.png" alt="" /></p>
+
+<p>However when we visit the url for our Heroku application we will get an Application Error page. Type <code>heroku open</code> or look at the last line of the console output for the url.</p>
+
+<p>As I already mentioned, we weren't actually expecting this to work.  So lets open the logs and see why.  In the console type:</p>
+
+<pre><code class="sh">heroku logs
+</code></pre>
+
+<p>This is a very useful command when trouble shooting Heroku deployments; along with its numerous options and flags for tailing and variable number of lines (<a href="https://devcenter.heroku.com/articles/logging">Log Guide</a>).  </p>
+
+<p>Cleverly the Toolbelt software has made the remote logs appear in our own console window and we should see an number of messages referencing “no web process running”.  Also if you log into you heroku.com and open up that app you should see a “no dynos” indicator.</p>
+
+<p>Let’s fix that, at the root of your application create a file called “Procfile”.  It has no file extension and must start with a capital letter.  In that file insert the following line:</p>
+
+<pre><code class="sh">web: java $JAVA_OPTS -jar target/*.jar
+</code></pre>
+
+<p>Here we are asking Heroku to create a “web” process and what command should be run.  As you should be able to see it is a similar command to what we ran earlier on our own command line to execute the jar file.  We have also included the JAVA_OPTS system variable, Heroku initializes this with own memory defaults. </p>
+
+<p>You can use the following to examine system variables on Heroku with:</p>
+
+<pre><code class="sh">heroku config
+</code></pre>
+
+<p>or to get a specific variable.  </p>
+
+<pre><code class="sh">heroku config:get JAVA_OPTS
+</code></pre>
+
+<p>Now lets do the git incantation again and push the change to Heroku</p>
+
+<pre><code>git add .
+git commit –am “add Procfile”
+git push heroku master
+&lt;enter passphrase&gt;
+</code></pre>
+
+<p>So if we hit our Heroku URL is the application working?  No… let’s check the logs again.</p>
+
+<p>We should see that the Heroku has tried to start our application, but buried in the messages is something along the lines of :</p>
+
+<p><code>Error R10 (Boot timeout) -&gt; Web process failed to bind to $PORT within 60 seconds of launch</code></p>
+
+<p><em>If you are not seeing the above message and the output is still complaining about “no web processing running – give Heroku a poke with the command <code>heroku ps:scale web=1</code></em></p>
+
+<p>The boot timeout message is because our application is trying to bind to port 8080, however Heroku likes to be in control of which ports applications are running on.</p>
+
+<p>In the main method for our application we will need to cater for this, change the content to be:</p>
+
+<pre><code class="java">public static void main(String[] args) throws Exception {
+    String webPort = System.getenv("PORT");
+    if (webPort == null || webPort.isEmpty()) {
+        webPort = "8080";
+    }
+    System.setProperty("server.port", webPort);
+    SpringApplication.run(WelcomeController.class, args);
+}
+</code></pre>
+
+<p>What we are doing here is using the PORT enviroment property that Heroku will provide.  In the case PORT is not provided i.e. our local environment it will default to 8080. </p>
+
+<p>Push the change to Heroku with the now familiar incantation. </p>
+
+<h4 id="checkpoint">Checkpoint:</h4>
+
+<p>We should now see our JSON response of “Hello World!” … out in the wild.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>I know part three probably seemed like hard work, but actually that was only because I led you around the houses to give you a feel for what could go wrong.</p>
+
+<p>Actually all we needed was a pom file, one small Java class and one line in a Profile.  Pretty neat to think we now have a full Spring container to play with.</p>
+
+<p>In the next part of this tutorial we'll look at hooking up a database to the application</p>
+
+</section>

@@ -7,6 +7,11 @@ collatzApp.config(function($routeProvider) {
 			controller  : 'mainController'
 		})
 
+        .when('/booting-up', {
+            templateUrl : 'pages/booting-up.html',
+            controller  : 'bootingUpController'
+        })
+
 		.when('/example1', {
 			templateUrl : 'pages/example.html',
 			controller  : 'exampleController'
@@ -20,6 +25,10 @@ collatzApp.config(function($routeProvider) {
 
 collatzApp.controller('mainController', function($scope) {
 	$scope.message = 'Everyone come and see how good I look!';
+});
+
+collatzApp.controller('bootingUpController', function($scope) {
+    $scope.message = 'Everyone come and see how good I look!';
 });
 
 collatzApp.controller('exampleController', function($scope) {
